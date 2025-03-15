@@ -80,14 +80,19 @@ body {
   
   /* Footer Section */
   footer {
-    background-color: #333;
+    background-color: #2aab48;
     color: #fff;
     padding: 20px 0;
     text-align: center;
   }
-  
+  footer img {
+    width: 40px; /* Decrease the width */
+    height: 40px; /* Decrease the height */
+    margin-top: 10px;
+    filter: invert(100%);
+  }
   footer a {
-    color: #007bff; /* Blue links */
+    color: #025c89; /* Blue links */
     text-decoration: none;
   }
   
@@ -133,7 +138,7 @@ body {
     max-width: 400px;
     background-color: white;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgb(13, 13, 13);
     padding: 20px;
     text-align: center;
   }
