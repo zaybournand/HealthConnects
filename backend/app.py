@@ -41,57 +41,40 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"<User {self.email}>"
 
-
 class Opportunity(db.Model):
-    __tablename__ = 'opportunities'
-
+    __tablename__ = "opportunities"
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    location = db.Column(db.String(120), nullable=False)
-    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
-    professional_id = db.Column(db.String(11), db.ForeignKey('users.id'), nullable=False)
+    location = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
 
-    professional = db.relationship('User', backref='posted_opportunities', lazy=True)
-
-    def __repr__(self):
-        return f"<Opportunity {self.title}, posted by {self.professional_id}>"
-
-# Define the Application model>"
-
-class Application(db.Model):
-    __tablename__ = 'applications'
-
-    id = db.Column(db.Integer, primary_key=True)
-    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunities.id'), nullable=False)
-    student_id = db.Column(db.String(11), db.ForeignKey('users.id'), nullable=False)
-    status = db.Column(db.String(50), default="Pending")
-
-    opportunity = db.relationship('Opportunity', backref='applications', lazy=True)
-    student = db.relationship('User', backref='applied_opportunities', lazy=True)
-
-    def __repr__(self):
-        return f"<Application by User {self.student_id} for Opportunity {self.opportunity_id} with status {self.status}>"
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "location": self.location,
+            "email": self.email
+        }
 
 with app.app_context():
     db.create_all()
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "GET":
+        # This is only hit when Flask-Login redirects to /login after logout
+        return jsonify({"message": "Please log in via POST with credentials."}), 200
+
+    # Handle POST (actual login)
     email = request.json["email"]
     password = request.json["password"]
 
-    
     user = User.query.filter_by(email=email).first()
-
-    if user is None:
-        return jsonify({"error": "Unauthorized Access"}), 401
-
-    
-    if not bcrypt.check_password_hash(user.password, password):
+    if user is None or not bcrypt.check_password_hash(user.password, password):
         return jsonify({"error": "Unauthorized"}), 401
 
-    
     login_user(user)
     session["user_id"] = user.id
 
@@ -99,6 +82,7 @@ def login():
         "id": user.id,
         "email": user.email
     })
+
 
 @app.route("/signup", methods=["POST"])
 def signup():
@@ -125,147 +109,33 @@ def signup():
     })
 
 
-
-@app.route('/api/application_status/<int:id>', methods=['GET', 'POST'])
-@login_required
-def api_status(id):
-    application_status = Application.query.get_or_404(id)
-    if application_status.professional_id != current_user.id:
-        return jsonify({'error': 'You are not authorized to edit this opportunity.'}), 403
-    
-    if request.method == 'GET':
-        return jsonify({'status': application_status.status})
-    
-    if request.method == 'POST':
-        new_status = request.json.get('status')
-        if new_status:
-            application_status.status = new_status
-            try:
-                db.session.commit()
-                return jsonify({'message': 'Application status updated successfully!'})
-            except Exception as e:
-                return jsonify({'error': f'There was an error updating status: {e}'}), 500
-        return jsonify({'error': 'Invalid status'}), 400
-
-@app.route('/api/update_profile', methods=['POST'])
-@login_required
-def profile_update():
-    user_update = User.query.get_or_404(current_user.id) 
-    
-    data = request.get_json()
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-    confirm_password = data.get('confirm_password')
-    user_type = data.get('user_type')
-
-    if password != confirm_password:
-        return jsonify({"error": "Passwords do not match!"}), 400
-
-    if password:
-        user_update.password = generate_password_hash(password) 
-
-    user_update.username = username
-    user_update.email = email
-    user_update.user_type = user_type
-
-    try:
-        db.session.commit()
-        return jsonify({"message": "Profile updated successfully!"}), 200
-    except Exception as e:
-        return jsonify({"error": f"An error occurred: {e}"}), 500
-
-
-@app.route('/api/search_opportunities', methods=['GET'])
-@login_required
-def search_opportunities():
-    keyword = request.args.get('keyword')
-    location = request.args.get('location')
-
-    query = Opportunity.query
-    if keyword:
-        query = query.filter(Opportunity.title.like(f'%{keyword}%') | Opportunity.description.like(f'%{keyword}%'))
-    if location:
-        query = query.filter(Opportunity.location.like(f'%{location}%'))
-
-    opportunities = query.all()
-    results = [{"title": opp.title, "description": opp.description, "location": opp.location} for opp in opportunities]
-
-    return jsonify(results)
-
-
-@app.route('/api/profile/apply', methods=['POST'])
-@login_required
-def apply():
-    data = request.form
-    resume = request.files.get('resume')
-    why_apply = data.get('whyApply')
-    additional_info = data.get('additionalInfo')
-
-    # Process the resume upload if it exists
-    if resume:
-        resume_filename = secure_filename(resume.filename)
-        resume.save(os.path.join(app.config['UPLOAD_FOLDER'], resume_filename))
-        # You could save the filename to the user's profile in the database
-
-    # Process the additional application information (e.g., save to the user's profile)
-    user = current_user
-    user.why_apply = why_apply
-    user.additional_info = additional_info
-
-    try:
-        db.session.commit()
-        return jsonify({"message": "Application successfully submitted!"}), 200
-    except Exception as e:
-        return jsonify({"error": f"There was an error submitting your application: {e}"}), 500
-
-
-    
-@app.route('/view_applications/<int:opportunity_id>', methods=['GET'])
-@login_required
-def view_application(opportunity_id):
-    opportunity = Opportunity.query.get_or_404(opportunity_id)
-    
-    if opportunity.professional_id != current_user.id:
-        flash("You are not authorized to view applications.", "danger")
-        return redirect(url_for('index'))
-    
-    applications = Application.query.filter_by(opportunity_id=opportunity_id).all()
-    students = [User.query.get(app.student_id) for app in applications]
-
-    return render_template('application.html', applications=applications, opportunity=opportunity, students=students)
-
-
-
-
-
-@app.route('/delete/<int:id>')
-@login_required
-def delete(id):
-    opportunity_to_delete = Opportunity.query.get_or_404(id)
-    if opportunity_to_delete.professional_id != current_user.id:
-        flash("You are not authorized to delete this opportunity.", "danger")
-        return redirect(url_for('index'))
-    try:
-        db.session.delete(opportunity_to_delete)
-        db.session.commit()
-        flash("Opportunity deleted successfully!", "success")
-        return redirect('/')
-    except Exception as e:
-        flash(f"There was an error deleting the opportunity: {e}", "danger")
-        return redirect('/')
-
-
-
-
-
-
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash("You have successfully logged out.", "info")
-    return redirect(url_for('login'))
+    session.clear()
+    return jsonify({"message": "Successfully logged out"}), 200
+
+@app.route("/opportunities", methods=["GET"])
+def get_opportunities():
+    all_opps = Opportunity.query.all()
+    return jsonify([opp.to_dict() for opp in all_opps])
+
+@app.route("/opportunities", methods=["POST"])
+
+def create_opportunity():
+    data = request.json
+    print("Received opportunity:", data)
+    new_opp = Opportunity(
+        title=data["title"],
+        description=data["description"],
+        location=data["location"],
+        email=data["email"]
+    )
+    db.session.add(new_opp)
+    db.session.commit()
+    return jsonify(new_opp.to_dict()), 201
+
 
 if __name__ == "__main__":
     app.run(debug=True)
