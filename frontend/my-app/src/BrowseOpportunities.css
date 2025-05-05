@@ -1,0 +1,105 @@
+.browse-container {
+  width: 80%;
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 25px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+.browse-title {
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.search-input {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 25px;
+}
+
+.opportunities-list {
+  list-style: none;
+  padding: 0;
+}
+
+.opportunity-item {
+  background-color: #ffffff;
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease;
+}
+
+.opportunity-item:hover {
+  transform: scale(1.01);
+}
+
+.opportunity-title {
+  font-size: 1.4rem;
+  color: #007bff;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.opportunity-description {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 5px;
+}
+
+.opportunity-location,
+.opportunity-email {
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+  color: #666;
+}
+
+.opportunity-location strong,
+.opportunity-email strong {
+  color: #222;
+}
+
+.email-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.email-link:hover {
+  text-decoration: underline;
+}
+
+.check-dashboard-button {
+  margin-bottom: 1rem;
+  padding: 0.6rem 1.2rem;
+  font-weight: bold;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.check-dashboard-button:hover {
+  background-color: #218838;
+}
+
+.no-results {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+  margin-top: 20px;
+}
