@@ -18,26 +18,17 @@ Database: SQLite (for development)
 
 Setup Instructions
 Backend:
-    cd backend
-    python -m venv .venv
-    source .venv/bin/activate  # or .venv\Scripts\activate on Windows
-    pip install -r requirements.txt
-    flask run
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+pip install -r requirements.txt
+flask run
 
-Frontend
+Frontend:
 cd frontend/my-app
 npm install
 npm start
-Folder Structure:
-    HealthConnect/
-    ├── backend/
-    │   ├── app.py
-    │   └── ...
-    ├── frontend/
-    │   └── my-app/
-    │       ├── src/
-    │       └── public/
-    └── README.md
+
 Contact: 
-    Built by Zayne Bournand
-    📧 zaybournand@gmail.com
+Built by Zayne Bournand
+📧 zaybournand@gmail.com
